@@ -1,17 +1,29 @@
 class UnitConfig {
-  static double widthUnit;
-  static double heightUnit;
+  static double _widthUnit;
+  static double _heightUnit;
+  static double _screenWidth;
+  static double _screenHeight;
 
   UnitConfig(double screenWidth, double screenHeight) {
-    widthUnit = screenWidth / 1080;
-    heightUnit = screenHeight / 1920;
+    _screenWidth = screenWidth;
+    _screenHeight = screenHeight;
+    _widthUnit = screenWidth / 1080;
+    _heightUnit = screenHeight / 1920;
   }
 
   static double getWidth(int value) {
-    return widthUnit * value;
+    return _widthUnit * value;
   }
 
   static double getHeight(int value) {
-    return heightUnit * value;
+    return _heightUnit * value;
+  }
+
+  static double getScreenWidth() {
+    return _screenWidth;
+  }
+
+  static double getScreenHeight() {
+    return _screenHeight;
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_technical_test/util/space_vertical.dart';
 import 'package:flutter_technical_test/util/unit_config.dart';
 import 'package:flutter_technical_test/viewmodel/viewmodel_login.dart';
 
 class ViewLogin extends StatelessWidget {
   final viewmodelLogin = ViewmodelLogin();
-  final myFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -43,19 +43,13 @@ class ViewLogin extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           SpaceVertical(100),
-          emailInput(),
+          emailForm(),
           SpaceVertical(25),
-          passwordInput(),
+          passwordForm(),
           SpaceVertical(75),
           loginButton(),
           SpaceVertical(100),
-          Text(
-            "Email and password don't match",
-            style: TextStyle(
-              color: Colors.red,
-            ),
-            textAlign: TextAlign.center,
-          )
+          warningText(),
         ],
       ),
     );
@@ -74,12 +68,16 @@ class ViewLogin extends StatelessWidget {
     );
   }
 
-  Widget emailInput() {
+  Widget emailForm() {
     return Theme(
       data: Theme.of(viewmodelLogin.context).copyWith(
         primaryColor: Colors.red,
       ),
       child: TextField(
+        onChanged: (value) {
+          viewmodelLogin.validateForm();
+        },
+        controller: viewmodelLogin.emailText,
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
@@ -88,49 +86,88 @@ class ViewLogin extends StatelessWidget {
         ),
         keyboardType: TextInputType.emailAddress,
         cursorColor: Colors.red,
+        textInputAction: TextInputAction.next,
       ),
     );
   }
 
-  Widget passwordInput() {
+  Widget passwordForm() {
     return Theme(
       data: Theme.of(viewmodelLogin.context).copyWith(
         primaryColor: Colors.red,
       ),
-      child: TextField(
-        obscureText: true,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
+      child: Observer(
+        builder: (context) => TextField(
+          onChanged: (value) {
+            viewmodelLogin.validateForm();
+          },
+          controller: viewmodelLogin.passwordText,
+          obscureText: viewmodelLogin.isTextHidden,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            labelText: "Password",
+            suffixIcon: IconButton(
+              icon: viewmodelLogin.isTextHidden
+                  ? Icon(CupertinoIcons.eye_slash)
+                  : Icon(CupertinoIcons.eye),
+              color: Colors.grey,
+              onPressed: () {
+                viewmodelLogin.changePasswordFormMode();
+              },
+            ),
           ),
-          labelText: "Password",
-          suffixIcon: Icon(
-            CupertinoIcons.eye_slash,
-            color: Colors.grey,
-          ),
+          keyboardType: TextInputType.visiblePassword,
+          cursorColor: Colors.red,
+          textInputAction: TextInputAction.done,
         ),
-        keyboardType: TextInputType.visiblePassword,
-        cursorColor: Colors.red,
       ),
     );
   }
 
   Widget loginButton() {
-    return Container(
-      width: double.infinity,
-      height: UnitConfig.getHeight(150),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: Colors.grey[300],
-      ),
-      child: Center(
-        child: Text(
-          "Sign In",
-          style: TextStyle(
-            color: Colors.white,
+    return GestureDetector(
+      onTap: () {
+        viewmodelLogin.processLogin();
+      },
+      child: Observer(
+        builder: (context) => Container(
+          width: double.infinity,
+          height: UnitConfig.getHeight(150),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color:
+                viewmodelLogin.isCorrectFormat ? Colors.blue : Colors.grey[300],
+          ),
+          child: Center(
+            child: Text(
+              "Sign In",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget warningText() {
+    return Observer(
+      builder: (context) {
+        if (!viewmodelLogin.isCorrectFormat) {
+          return Text(
+            "Email and password do not match!",
+            style: TextStyle(
+              color: Colors.red,
+            ),
+            textAlign: TextAlign.center,
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
 }
